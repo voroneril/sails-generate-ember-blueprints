@@ -57,6 +57,10 @@ module.exports = {
       // prepare for sideloading
       forEach( associations, function ( assoc ) {
         var assocName;
+ 		var primaryKey = 'id';
+        if(!_.isUndefined(assoc.model) && !_.isUndefined(sails.models[assoc.model].primaryKey)){
+           primaryKey = sails.models[assoc.model].primaryKey ;
+        }
         if (assoc.type === 'collection') {
           assocName = pluralize(camelCase(sails.models[assoc.collection].globalId));
         } else {
@@ -83,11 +87,13 @@ module.exports = {
 
         if ( assoc.type === "collection" && record[ assoc.alias ] && record[ assoc.alias ].length > 0 ) {
           if ( sideload ) json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
-          record[ assoc.alias ] = pluck( record[ assoc.alias ], 'id' );
+          //record[ assoc.alias ] = pluck( record[ assoc.alias ], 'id' );
+          record[ assoc.alias ] = pluck( record[ assoc.alias ], primaryKey );
         }
         if ( assoc.type === "model" && record[ assoc.alias ] ) {
           if ( sideload ) json[ assocName ] = json[ assocName ].concat( record[ assoc.alias ] );
-          record[ assoc.alias ] = record[ assoc.alias ].id;
+          //record[ assoc.alias ] = record[ assoc.alias ].id;
+          record[ assoc.alias ] = record[ assoc.alias ][primaryKey];
         }
       } );
       return record;
@@ -160,10 +166,12 @@ module.exports = {
           _options.populate_limit ||
           _options.limit ||
           DEFAULT_POPULATE_LIMIT;
+         var populateHash = {};
+         if (populationLimit >= 0) {
+           populateHash.limit = populateLimit
+         }
 
-        return query.populate( association.alias, {
-          limit: populationLimit
-        } );
+        return query.populate( association.alias, populateHash);
       } else return query;
     }, query );
   },
@@ -376,7 +384,30 @@ module.exports = {
    * @param  {Request} req
    */
   parseSort: function ( req ) {
-    return req.param( 'sort' ) || req.options.sort || undefined;
+    //return req.param( 'sort' ) || req.options.sort || undefined;
+     var json;
+     try {
+       json = JSON.parse(req.param( 'sort' ));
+     } catch (e) { /* ignore */ }
+     return json || req.param( 'sort' ) || req.options.sort || undefined;
+   },
+
+   /**
+    * Apply one or more sort attributes to the query
+    * 
+    * @param  {Query} query         [waterline query object]
+    * @param  {Request} req
+    */
+   applySort: function ( query, req ) {
+ 
+     var sort = this.parseSort( req );
+     if (Array.isArray(sort)) {
+       for (var i=0; i < sort.length; ++i) {
+         query.sort(sort[i]);
+       }
+     } else {
+       query.sort( sort );
+     }
   },
 
   /**

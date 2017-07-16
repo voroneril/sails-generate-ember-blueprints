@@ -5,6 +5,9 @@ Sails-Generate-Ember-Blueprints
 
 Ember Data compatible blueprints for Sails v0.10+
 
+**Warning: this repository is no longer actively maintained. It has been superceded by [sails-ember-rest](https://github.com/mdconaway/sails-ember-rest). Please file all issues and pull requests under [sails-ember-rest](https://github.com/mdconaway/sails-ember-rest).**
+
+
 [Sails](http://www.sailsjs.org/) supports overriding the default blueprints, which gives us a remarkable flexibility in making Sails work together with a variety of clients and frontend libraries.
 
 The blueprints in this repository are meant as a starting point to modify the Sails API JSON output to make it work with Ember, Ember Data and the default Ember Data RESTAdapter.
@@ -159,7 +162,7 @@ As a **quick example**, if you create a `post` model under the namespace `api/v1
 ```js
 {
   "post": {
-    "title": "A new post"
+    "title": "A new post",
     "content": "This is the wonderful content of this new post."
   }
 }
